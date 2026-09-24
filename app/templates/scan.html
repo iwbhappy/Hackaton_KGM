@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-heading"><div><p class="eyebrow">НОВОЕ СКАНИРОВАНИЕ</p><h1>Добавьте TLS-сервисы</h1><p class="muted">Проверка сертификатов выполняется без изменений на целевых серверах.</p></div><a href="/" class="button">К обзору</a></section>
+<div class="scan-layout"><section class="panel"><div class="section-heading"><h2>Список целей</h2><button id="demo">Вставить демо-список</button></div><label for="targets">По одной цели на строку</label><textarea id="targets" rows="12" placeholder="portal.company.kz&#10;https://example.kz:8443/&#10;10.0.0.0/30"></textarea>
+<div class="file-row"><label>Или загрузите файл<input id="target-file" type="file" accept=".txt,.csv"></label><small class="muted">UTF-8 · TXT или CSV · до 1 МБ</small></div><div class="actions"><button id="preview" class="button">Проверить список</button><button id="start-scan" class="primary">Сканировать</button></div>
+</section><aside class="panel guide"><p class="eyebrow">ПОДДЕРЖИВАЕМЫЕ ФОРМАТЫ</p><h2>От одного сервиса до подсети</h2><dl><dt>DNS или IP</dt><dd>portal.company.kz · 10.0.0.5</dd><dt>Нестандартный порт</dt><dd>portal.company.kz:8443</dd><dt>URL и IPv6</dt><dd>https://portal.company.kz/path<br>[2001:db8::1]:443</dd><dt>Диапазон CIDR</dt><dd>10.0.0.0/28</dd><dt>CSV с владельцами</dt><dd>target;service_name;owner;criticality</dd></dl><p class="notice">Для демо запустите локальный стенд и добавьте имена из lab/hosts.txt. Порт по умолчанию — 443.</p></aside></div>
+<section id="preview-panel" class="panel" hidden><h2>Предпросмотр</h2><p id="preview-count"></p><ul id="parse-errors" class="error-list"></ul><div class="table-scroll"><table><thead><tr><th>Хост</th><th>Порт</th><th>SNI</th><th>Владелец</th><th>Критичность</th></tr></thead><tbody id="preview-rows"></tbody></table></div></section>
+<section id="progress-panel" class="panel" hidden><h2>Сканирование</h2><progress id="scan-progress" max="1" value="0"></progress><p id="progress-text" aria-live="polite"></p></section>
+{% endblock %}
+{% block scripts %}<script src="/static/scan.js" defer></script>{% endblock %}

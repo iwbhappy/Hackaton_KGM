@@ -41,6 +41,7 @@ def summarize(rows: list[dict]) -> dict:
     issues = {code: sum(any(i["code"] == code for i in row["issues"]) for row in rows)
               for code in ["CHAIN_UNTRUSTED", "SELF_SIGNED", "HOSTNAME_MISMATCH", "NO_OWNER"]}
     issues["CHAIN"] = sum(row["chain_status"] not in {"valid", "valid_but_expired", "not_yet_valid", "not_checked"} for row in rows)
+    issues["NO_OWNER"] = sum(not row["owner"] for row in rows)
     scores = [row["risk_score"] for row in rows if row["risk_score"] is not None]
     buckets = [{"label": f"{start}–{end}", "count": sum(row["days_left"] is not None and start <= row["days_left"] <= end for row in rows)}
                for start, end in [(0, 7), (8, 14), (15, 30), (31, 60), (61, 90)]]

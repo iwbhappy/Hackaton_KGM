@@ -43,4 +43,16 @@ def health() -> dict:
 @app.get("/")
 def dashboard(request: Request):
     """Render the application shell."""
-    return templates.TemplateResponse(request=request, name="base.html")
+    return templates.TemplateResponse(request=request, name="dashboard.html")
+
+
+@app.get("/scan")
+def scan_page(request: Request):
+    """Render target input, preview and scan progress."""
+    return templates.TemplateResponse(request=request, name="scan.html")
+
+
+@app.get("/api/demo-targets")
+def demo_targets() -> dict:
+    """Return the checked-in laboratory target list."""
+    return {"text": (ROOT / "lab/targets.txt").read_text(encoding="utf-8")}
