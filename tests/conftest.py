@@ -1,8 +1,14 @@
 from pathlib import Path
 from threading import Thread
 from uuid import uuid4
+import os
 
 import pytest
+
+# Test databases and logs never modify the user's application state.
+TEST_ROOT = Path(__file__).resolve().parent.parent / ".test-artifacts" / uuid4().hex
+os.environ["DATA_DIR"] = str(TEST_ROOT / "data")
+os.environ["LOG_DIR"] = str(TEST_ROOT / "logs")
 
 
 @pytest.fixture(scope="session")
@@ -30,3 +36,15 @@ def lab_server(lab_material):
     server.shutdown()
     server.server_close()
     thread.join(timeout=5)
+
+
+@pytest.fixture
+def client():
+    from fastapi.testclient import TestClient
+    from app.db import engine, init_db
+    from app.models import Base
+    from app.main import app
+    Base.metadata.drop_all(engine)
+    init_db()
+    with TestClient(app) as test_client:
+        yield test_client
