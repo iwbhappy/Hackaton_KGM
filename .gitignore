@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+pytest-cache-files-*/
+.env
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+lab/certs/
+.tools/
+.test-artifacts/
+wheelhouse/
+node_modules/
