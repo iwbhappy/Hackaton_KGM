@@ -9,7 +9,7 @@ from app.config import ROOT
 from app.db import init_db
 from app.db import SessionLocal
 from app.audit import audit_event
-from app.api import scans, results, endpoints
+from app.api import scans, results, endpoints, export
 from app.middleware import BodyLimitMiddleware
 from app.models import Scan, utcnow
 from sqlalchemy import select
@@ -28,7 +28,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="Certificate Radar", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
-for router in [scans.router, results.router, endpoints.router]:
+for router in [scans.router, results.router, endpoints.router, export.router]:
     app.include_router(router)
 app.mount("/static", StaticFiles(directory=ROOT / "app/static"), name="static")
 templates = Jinja2Templates(directory=ROOT / "app/templates")
