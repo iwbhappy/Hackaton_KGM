@@ -1,0 +1,14 @@
+target;service_name;owner;criticality
+valid.lab.local;Корпоративный портал;ИТ;normal
+info.lab.local;База знаний;ИТ;normal
+warn.lab.local;Почта;Петров П.;normal
+soon.lab.local;Документооборот;Бухгалтерия;high
+vpn.lab.local;VPN;Иванов И.;critical
+expired.lab.local;Архив;ИТ;normal
+selfsigned.lab.local;Тестовый сервис;;normal
+untrusted.lab.local;Внешний сервис;ИТ;normal
+nochain.lab.local;Сервис без цепочки;;normal
+mismatch.lab.local;Сервис с ошибкой имени;ИТ;normal
+weak.lab.local;Устаревший сервис;;normal
+wildcard.lab.local;Wildcard;ИТ;normal
+dead.lab.local;Недоступный сервис;ИТ;normal

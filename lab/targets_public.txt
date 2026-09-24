@@ -1,0 +1,7 @@
+expired.badssl.com
+self-signed.badssl.com
+wrong.host.badssl.com
+untrusted-root.badssl.com
+incomplete-chain.badssl.com
+sha1-intermediate.badssl.com
+rsa2048.badssl.com

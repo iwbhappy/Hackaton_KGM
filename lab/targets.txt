@@ -1,0 +1,16 @@
+# Демо: сначала запустите стенд и добавьте lab/hosts.txt в системный hosts
+valid.lab.local
+info.lab.local
+warn.lab.local
+soon.lab.local
+vpn.lab.local
+expired.lab.local
+selfsigned.lab.local
+untrusted.lab.local
+nochain.lab.local
+mismatch.lab.local
+weak.lab.local
+wildcard.lab.local
+dead.lab.local
+127.0.0.0/30
+https://valid.lab.local/portal
