@@ -15,6 +15,7 @@
 <div class="table-scroll"><table id="results-table"><thead><tr>
 {% for key,label in [("service_name","Сервис"),("owner","Владелец"),("criticality","Критичность"),("issuer","Издатель"),("subject_cn","CN"),("not_after","Истекает"),("days_left","Дней"),("status","Статус"),("chain_status","Цепочка"),("hostname_match","Имя"),("risk_score","Риск"),("issues","Проблемы")] %}<th><button data-sort="{{ key }}">{{ label }} <span></span></button></th>{% endfor %}
 </tr></thead><tbody id="result-rows"></tbody></table></div><p id="no-matches" class="empty" hidden>По выбранным фильтрам ничего не найдено.</p></section>
+<details class="panel"><summary>Каналы уведомлений и тестовая отправка</summary><div id="channels" class="detail-layout"></div></details>
 </div>
 {% endblock %}
-{% block scripts %}<script src="/static/vendor/chart.umd.min.js" defer></script><script src="/static/dashboard.js" defer></script>{% endblock %}
+{% block scripts %}<script src="/static/vendor/chart.umd.min.js" defer></script><script src="/static/dashboard.js" defer></script><script src="/static/notifications.js" defer></script>{% endblock %}

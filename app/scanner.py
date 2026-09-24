@@ -95,3 +95,14 @@ def run_scan(scan_id: int, targets: list[Target]) -> None:
                 PROGRESS[scan_id]["status"] = status
         finally:
             SCAN_LOCK.release()
+    if status == "done":
+        try:
+            from app.notifiers.dispatcher import dispatch
+            from app.repository import result_dict
+            with SessionLocal() as session:
+                rows = [result_dict(result, endpoint) for result, endpoint in session.execute(
+                    select(Result, Endpoint).join(Endpoint).where(Result.scan_id == scan_id))]
+            dispatch(rows)
+        except Exception:
+            with SessionLocal.begin() as session:
+                audit_event(session, "system", "notification_failed", {"error": "Не удалось подготовить уведомления", "scan_id": scan_id})
