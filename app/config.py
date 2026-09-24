@@ -1,7 +1,7 @@
 """Environment settings; credentials are never persisted in the database."""
 from pathlib import Path
 
-from pydantic import SecretStr
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     smtp_from: str = ""
     smtp_to: str = ""
     teams_webhook_url: SecretStr = SecretStr("")
+
+    @field_validator("data_dir", "log_dir")
+    @classmethod
+    def absolute_path(cls, value: Path) -> Path:
+        """Resolve relative paths against the project, independently from cwd."""
+        return value if value.is_absolute() else ROOT / value
 
     @property
     def trusted_ca_dir(self) -> Path:

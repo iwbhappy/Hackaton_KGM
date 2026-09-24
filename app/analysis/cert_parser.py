@@ -21,6 +21,28 @@ def is_self_signed(cert: x509.Certificate) -> bool:
     try:
         cert.verify_directly_issued_by(cert)
         return True
+    except (ValueError, UnsupportedAlgorithm):
+        # Recent cryptography versions reject SHA-1 in this convenience method.
+        return verify_legacy_self_signature(cert)
+    except (TypeError, InvalidSignature):
+        return False
+
+
+def verify_legacy_self_signature(cert: x509.Certificate) -> bool:
+    """Verify legacy signatures with the low-level key API; never infer from names."""
+    key = cert.public_key()
+    try:
+        if isinstance(key, rsa.RSAPublicKey):
+            key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_algorithm_parameters, cert.signature_hash_algorithm)
+        elif isinstance(key, ec.EllipticCurvePublicKey):
+            key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_algorithm_parameters)
+        elif isinstance(key, dsa.DSAPublicKey):
+            key.verify(cert.signature, cert.tbs_certificate_bytes, cert.signature_hash_algorithm)
+        elif isinstance(key, (ed25519.Ed25519PublicKey, ed448.Ed448PublicKey)):
+            key.verify(cert.signature, cert.tbs_certificate_bytes)
+        else:
+            return False
+        return True
     except (ValueError, TypeError, InvalidSignature, UnsupportedAlgorithm):
         return False
 

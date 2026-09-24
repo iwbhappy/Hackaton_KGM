@@ -29,6 +29,6 @@
     try { const options=R.json({service_name:$("#service-name").value,owner:$("#owner").value,criticality:$("#criticality").value});options.method="PATCH";render(await R.api(`/api/endpoints/${id}`,options));R.message("Изменения сохранены. Риск пересчитан без сканирования."); }
     catch(error){R.message(error.message,true);}finally{button.disabled=false;}
   });
-  R.action("#copy-thumbprint",async()=>{await navigator.clipboard.writeText(latest.thumbprint_sha1);R.message("Thumbprint скопирован.");});
+  R.action("#copy-thumbprint",async()=>{try{await navigator.clipboard.writeText(latest.thumbprint_sha1);}catch{throw new Error("Не удалось скопировать. Выделите отпечаток в таблице и скопируйте вручную.");}R.message("Thumbprint скопирован.");});
   R.api(`/api/endpoints/${id}`).then(render).catch(error=>R.message(error.message,true));
 })();

@@ -121,6 +121,8 @@ def parse_targets(text: str, filename: str = "", max_cidr_hosts: int = 1024,
             try:
                 if metadata.get("_error"):
                     raise ValueError(metadata["_error"])
+                if any(value and len(value) > 253 for value in metadata.values()):
+                    raise ValueError("Поля CSV должны содержать не более 253 символов")
                 if metadata.get("criticality") and metadata["criticality"] not in CRITICALITIES:
                     raise ValueError("Критичность: low, normal, high или critical")
                 if not value.strip():

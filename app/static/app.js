@@ -15,7 +15,9 @@ window.Radar = (() => {
     box.textContent = text; box.hidden = !text; box.classList.toggle("error", error);
   }
   async function api(path, options = {}) {
-    const response = await fetch(path, options);
+    let response;
+    try { response = await fetch(path, options); }
+    catch { throw new Error("Нет связи с сервером. Проверьте, что приложение запущено."); }
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       const detail = data.detail;

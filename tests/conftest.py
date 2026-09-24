@@ -9,6 +9,8 @@ import pytest
 TEST_ROOT = Path(__file__).resolve().parent.parent / ".test-artifacts" / uuid4().hex
 os.environ["DATA_DIR"] = str(TEST_ROOT / "data")
 os.environ["LOG_DIR"] = str(TEST_ROOT / "logs")
+for name in ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM", "SMTP_TO", "TEAMS_WEBHOOK_URL"]:
+    os.environ[name] = ""
 
 
 @pytest.fixture(scope="session")
@@ -42,9 +44,13 @@ def lab_server(lab_material):
 def client():
     from fastapi.testclient import TestClient
     from app.db import engine, init_db
-    from app.models import Base
     from app.main import app
-    Base.metadata.drop_all(engine)
+    engine.dispose()
+    database = Path(engine.url.database).resolve()
+    assert database.is_relative_to(TEST_ROOT.resolve()) and database.name == "radar.db"
+    database.unlink(missing_ok=True)
+    from app.scanner import PROGRESS
+    PROGRESS.clear()
     init_db()
     with TestClient(app) as test_client:
         yield test_client

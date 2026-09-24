@@ -15,11 +15,13 @@ from app.api import scans, results, endpoints, export, notifications, settings a
 from app.middleware import BodyLimitMiddleware
 from app.models import Scan, utcnow
 from sqlalchemy import select
+from app.logging_setup import configure_logging
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
+    configure_logging()
     with SessionLocal.begin() as session:
         for scan in session.scalars(select(Scan).where(Scan.status == "running")):
             scan.status, scan.finished_at = "failed", utcnow()

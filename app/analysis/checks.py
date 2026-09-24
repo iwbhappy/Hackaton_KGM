@@ -102,5 +102,5 @@ CHECKS = [check_expired, check_expiring, check_self_signed, check_chain, check_h
 
 def run_checks(result: dict, endpoint: dict, config: dict) -> list[dict]:
     """Execute all registered checks; failed observations have no certificate findings."""
-    checks = CHECKS if result.get("reachable") else [check_unreachable]
+    checks = CHECKS if result.get("reachable") else [check_owner, check_unreachable]
     return [asdict(issue) for check in checks if (issue := check(result, endpoint, config))]

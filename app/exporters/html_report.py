@@ -11,5 +11,7 @@ def export_html(rows: list[dict]) -> str:
     """Render a self-contained report with KPIs, risk reasons and remediation."""
     env = Environment(loader=FileSystemLoader(ROOT / "app/templates"), autoescape=select_autoescape(["html"]))
     return env.get_template("report.html").render(
-        rows=rows, summary=summarize(rows), columns=COLUMNS[:14], display=display_value,
+        rows=rows, summary=summarize(rows), columns=[column for column in COLUMNS if column[0] in {
+            "service_name", "owner", "criticality", "issuer", "subject_cn", "not_after", "days_left",
+            "status", "chain_status", "hostname_match", "risk_score", "issues"}], display=display_value,
         status_labels=STATUS_LABELS, generated_at=datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC"))

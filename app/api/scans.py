@@ -1,7 +1,4 @@
 """Target preview and background scan endpoints."""
-import json
-from dataclasses import asdict
-
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 from pydantic import ValidationError
 from sqlalchemy import select

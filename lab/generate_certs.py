@@ -47,7 +47,7 @@ def make_certificate(name: str, days: int, issuer=None, ca=False, weak=False,
                .issuer_name(issuer_cert.subject if issuer_cert else subject)
                .public_key(key.public_key()).serial_number(x509.random_serial_number())
                .not_valid_before(now - timedelta(days=400 if days < 0 else 1))
-               .not_valid_after(now + timedelta(days=days, hours=1))
+               .not_valid_after(now + timedelta(days=days, hours=12))
                .add_extension(x509.BasicConstraints(ca=ca, path_length=None), critical=True)
                .add_extension(x509.KeyUsage(True, False, not ca, False, False, ca, ca, None, None), True)
                .add_extension(x509.SubjectKeyIdentifier.from_public_key(key.public_key()), False)

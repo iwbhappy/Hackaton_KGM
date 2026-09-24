@@ -1,7 +1,7 @@
 """Bounded parallel TLS collection with serialized database writes."""
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict
 from threading import Lock
+import logging
 
 from sqlalchemy import select
 
@@ -42,6 +42,7 @@ def create_scan(targets: list[Target], actor: str) -> int:
             PROGRESS[scan.id] = {"done": 0, "total": len(targets), "status": "running"}
         return scan.id
     except Exception:
+        logging.getLogger("radar").exception("Не удалось создать сканирование")
         SCAN_LOCK.release()
         raise
 
@@ -52,6 +53,7 @@ def collect_one(target: Target, config: dict) -> dict:
         raw = TLSCollector(timeout=config["connect_timeout"]).collect(target)
         return result_attributes(raw, target.host)
     except Exception:
+        logging.getLogger("radar").exception("Не удалось разобрать TLS-ответ от %s:%s", target.host, target.port)
         return {"reachable": False, "error": "Не удалось разобрать ответ TLS-сервиса",
                 "chain_status": "not_checked", "hostname_match": "not_checked"}
 
@@ -83,6 +85,7 @@ def run_scan(scan_id: int, targets: list[Target]) -> None:
             for future in as_completed(pending):
                 save_result(scan_id, pending[future], future.result(), config)
     except Exception:
+        logging.getLogger("radar").exception("Сканирование %s завершилось с ошибкой", scan_id)
         status = "failed"
     finally:
         try:
