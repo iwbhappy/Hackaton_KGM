@@ -1,0 +1,4 @@
+{% extends "base.html" %}{% block content %}
+<section class="page-heading"><div><p class="eyebrow">ЖУРНАЛ ДЕЙСТВИЙ</p><h1>История операций</h1><p class="muted">Последние 500 событий. Все изменения и результаты отправки уведомлений.</p></div><button id="refresh-audit">Обновить</button></section>
+<section class="panel"><label>Действие<select id="action-filter"><option value="">Все действия</option></select></label><div class="table-scroll"><table><thead><tr><th>Время</th><th>Инициатор</th><th>Действие</th><th>Подробности</th></tr></thead><tbody id="audit-rows"></tbody></table></div></section>
+{% endblock %}{% block scripts %}<script src="/static/audit.js" defer></script>{% endblock %}

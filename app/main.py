@@ -2,6 +2,8 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -9,7 +11,7 @@ from app.config import ROOT
 from app.db import init_db
 from app.db import SessionLocal
 from app.audit import audit_event
-from app.api import scans, results, endpoints, export, notifications
+from app.api import scans, results, endpoints, export, notifications, settings as settings_api
 from app.middleware import BodyLimitMiddleware
 from app.models import Scan, utcnow
 from sqlalchemy import select
@@ -28,10 +30,17 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="Certificate Radar", lifespan=lifespan)
 app.add_middleware(BodyLimitMiddleware)
-for router in [scans.router, results.router, endpoints.router, export.router, notifications.router]:
+for router in [scans.router, results.router, endpoints.router, export.router, notifications.router, settings_api.router]:
     app.include_router(router)
 app.mount("/static", StaticFiles(directory=ROOT / "app/static"), name="static")
 templates = Jinja2Templates(directory=ROOT / "app/templates")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(_request: Request, error: RequestValidationError):
+    """Return localized errors without echoing submitted values or credentials."""
+    return JSONResponse(status_code=422, content={"detail": "Некорректные параметры запроса",
+        "errors": [{"field": ".".join(map(str, item["loc"])), "message": "Недопустимое значение"} for item in error.errors()]})
 
 
 @app.get("/health")
@@ -63,3 +72,15 @@ def details_page(request: Request, endpoint_id: int):
     """Render certificate attributes, editable ownership and history."""
     endpoints.endpoint_details(endpoint_id)
     return templates.TemplateResponse(request=request, name="details.html", context={"endpoint_id": endpoint_id})
+
+
+@app.get("/settings")
+def settings_page(request: Request):
+    """Render scanner, threshold, notification and trust settings."""
+    return templates.TemplateResponse(request=request, name="settings.html")
+
+
+@app.get("/audit")
+def audit_page(request: Request):
+    """Render the audit journal."""
+    return templates.TemplateResponse(request=request, name="audit.html")
