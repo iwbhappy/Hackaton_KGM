@@ -53,6 +53,13 @@ def scan_page(request: Request):
 
 
 @app.get("/api/demo-targets")
-def demo_targets() -> dict:
+def demo_targets(csv: bool = False) -> dict:
     """Return the checked-in laboratory target list."""
-    return {"text": (ROOT / "lab/targets.txt").read_text(encoding="utf-8")}
+    return {"text": (ROOT / ("lab/targets.csv" if csv else "lab/targets.txt")).read_text(encoding="utf-8")}
+
+
+@app.get("/endpoint/{endpoint_id}")
+def details_page(request: Request, endpoint_id: int):
+    """Render certificate attributes, editable ownership and history."""
+    endpoints.endpoint_details(endpoint_id)
+    return templates.TemplateResponse(request=request, name="details.html", context={"endpoint_id": endpoint_id})

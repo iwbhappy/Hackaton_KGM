@@ -26,6 +26,8 @@
   }
   R.action("#demo",async()=>{const data=await R.api("/api/demo-targets"); $("#targets").value=data.text; $("#target-file").value=""; await preview();});
   R.action("#preview",preview);
+  R.action("#demo-csv",async()=>{const data=await R.api("/api/demo-targets?csv=true");$("#targets").value=data.text;$("#target-file").value="";await preview();});
+  R.action("#import-owners",async()=>{if(!await preview()) throw new Error("Исправьте ошибки списка.");const result=await R.api("/api/endpoints/import",payload());R.message(`Обновлено сервисов: ${result.updated}. Риск пересчитан.`);});
   R.action("#start-scan",async()=>{if(!await preview()) {R.message("Исправьте ошибки или добавьте цели.",true);return;} const result=await R.api("/api/scans",payload()); history.replaceState(null,"",`/scan?scan_id=${result.scan_id}`); await poll(result.scan_id);});
   $("#targets").addEventListener("input",()=>$("#target-file").value="");
   const scanId=new URLSearchParams(location.search).get("scan_id"); if(scanId) poll(Number(scanId));

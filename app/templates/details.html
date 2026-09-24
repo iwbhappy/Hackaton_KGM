@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="/">← Все сервисы</a><section class="page-heading"><div><p class="eyebrow">КАРТОЧКА СЕРВИСА</p><h1 id="service-title">Загрузка…</h1><p id="service-address" class="muted"></p></div><div id="detail-status"></div></section>
+<div id="details" data-endpoint-id="{{ endpoint_id }}">
+<section class="detail-layout"><div class="panel"><h2>Ответственность за сервис</h2><form id="owner-form"><label>Название сервиса<input id="service-name" maxlength="253"></label><label>Владелец<input id="owner" maxlength="253" placeholder="ФИО, email или команда"></label><label>Критичность<select id="criticality"><option value="low">Низкая</option><option value="normal">Обычная</option><option value="high">Высокая</option><option value="critical">Критичная</option></select></label><button class="primary" type="submit">Сохранить и пересчитать риск</button></form></div><div class="panel"><p class="eyebrow">ОЦЕНКА РИСКА</p><div id="risk-value" class="risk-number"></div><ul id="risk-reasons" class="reason-list"></ul><p class="muted">Сумма факторов × критичность сервиса, не более 100.</p></div></section>
+<section class="panel"><div class="section-heading"><h2>Сертификат и TLS</h2><button id="copy-thumbprint">Копировать Thumbprint</button></div><p id="ip-hint" class="notice" hidden>Сканирование по IP: проверка имени выполнена по IP-адресу. Сервер возвращает сертификат по умолчанию.</p><dl id="attributes" class="attributes"></dl></section>
+<section class="panel"><h2>Проблемы и рекомендации</h2><div class="table-scroll"><table><thead><tr><th>Проблема</th><th>Подробности</th><th>Рекомендация</th><th>Баллы</th></tr></thead><tbody id="issues-rows"></tbody></table></div><p id="no-issues" class="muted" hidden>Проблем не обнаружено.</p></section>
+<section class="panel"><h2>История сканирований</h2><div class="table-scroll"><table><thead><tr><th>Время</th><th>Thumbprint</th><th>Дней</th><th>Статус</th><th>Риск</th></tr></thead><tbody id="history-rows"></tbody></table></div></section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="/static/details.js" defer></script>{% endblock %}

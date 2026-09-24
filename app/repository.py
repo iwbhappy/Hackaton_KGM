@@ -4,6 +4,7 @@ from sqlalchemy import func, select
 
 from app.analysis.status import as_utc
 from app.models import Endpoint, Result
+from app.analysis.analyzer import analyze
 
 
 def model_dict(row) -> dict:
@@ -32,6 +33,13 @@ def latest_results(session) -> list[dict]:
     rows = [result_dict(result, endpoint) for result, endpoint in latest_pairs(session)]
     return sorted(rows, key=lambda r: (-(r["risk_score"] if r["risk_score"] is not None else -1),
                                        r["days_left"] if r["days_left"] is not None else 999999))
+
+
+def refresh_analysis(result: Result, endpoint: Endpoint, config: dict) -> None:
+    """Recompute derived fields without changing the original observation or date."""
+    data = analyze(model_dict(result), model_dict(endpoint), config)
+    for key in ("days_left", "status", "issues", "risk_score", "risk_level", "reasons"):
+        setattr(result, key, data[key])
 
 
 def summarize(rows: list[dict]) -> dict:
