@@ -1,4 +1,5 @@
 """One summary per channel and scan, deduplicated by certificate and threshold."""
+from datetime import datetime
 from threading import Lock
 from sqlalchemy import select
 
@@ -24,12 +25,21 @@ def threshold_for(days: int | None, thresholds: list[int]) -> int | None:
 
 def notification_text(rows: list[dict]) -> tuple[str, str]:
     """Create one bounded digest, referring to the dashboard for long inventories."""
-    subject = f"Certificate Radar: {len(rows)} сервисов требуют внимания"
+    count = len(rows)
+    if count % 10 == 1 and count % 100 != 11:
+        phrase = "сертификат требует"
+    elif count % 10 in {2, 3, 4} and count % 100 not in {12, 13, 14}:
+        phrase = "сертификата требуют"
+    else:
+        phrase = "сертификатов требуют"
+    indicator = "🔴" if any(row["status"] in {"EXPIRED", "CRITICAL"} for row in rows) else "🟡"
+    subject = f"{indicator} Certificate Radar: {count} {phrase} внимания"
     lines = []
     for index, row in enumerate(rows):
         days = row["days_left"]
         expiry = f"ИСТЁК {-days} дн. назад" if days < 0 else f"истекает через {days} дн."
-        line = (f"• {row['host']} — {expiry} ({str(row['not_after'])[:10]}), "
+        date = datetime.fromisoformat(str(row["not_after"])).strftime("%d.%m.%Y")
+        line = (f"• {row['host']} — {expiry} ({date}), "
                 f"риск {row['risk_score']}/100 {row['risk_level']}, владелец: {row['owner'] or 'не назначен'}")
         if sum(map(len, lines)) + len(line) > 2800:
             lines.append(f"…ещё {len(rows) - index} сервисов. Полный список в Dashboard.")

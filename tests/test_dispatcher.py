@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from app.db import SessionLocal
 from app.models import NotificationSent, Result
-from app.notifiers.dispatcher import dispatch, threshold_for
+from app.notifiers.dispatcher import dispatch, notification_text, threshold_for
 from tests.test_endpoints import add_result
 
 
@@ -54,3 +54,23 @@ def test_latest_notification_error_clears_after_success(client, monkeypatch):
     status = client.get("/api/notifications").json()
     assert status["last_error"] is None
     assert len(status["failures"]) == 1
+
+
+@pytest.mark.parametrize("count,phrase", [
+    (1, "сертификат требует"), (2, "сертификата требуют"), (5, "сертификатов требуют"),
+    (11, "сертификатов требуют"), (21, "сертификат требует"),
+])
+def test_notification_wording(count, phrase):
+    row = {"host": "vpn.lab.local", "days_left": 5, "not_after": "2026-09-30T12:00:00+00:00",
+           "risk_score": 91, "risk_level": "Critical", "owner": "Иванов И.", "status": "CRITICAL"}
+    subject, text = notification_text([row] * count)
+    assert subject == f"🔴 Certificate Radar: {count} {phrase} внимания"
+    assert text.splitlines()[0] == (
+        "• vpn.lab.local — истекает через 5 дн. (30.09.2026), риск 91/100 Critical, владелец: Иванов И."
+    )
+    row.update(status="WARNING", days_left=25)
+    assert notification_text([row])[0].startswith("🟡")
+    row.update(status="EXPIRED", days_left=-5)
+    subject, text = notification_text([row])
+    assert subject.startswith("🔴")
+    assert "ИСТЁК 5 дн. назад" in text
