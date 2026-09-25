@@ -5,6 +5,17 @@ from datetime import datetime, timezone
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.serialization import pkcs12
+from cryptography.hazmat.primitives.serialization import Encoding
+
+from app.analysis.cert_parser import parse_certificate
+
+
+def test_lab_has_three_distinct_issuers(lab_material):
+    expected = {"valid": "Lab Corporate PKI", "untrusted": "Rogue Issuer Ltd",
+                "selfsigned": "Self-Signed Test"}
+    for name, organization in expected.items():
+        cert = x509.load_pem_x509_certificate((lab_material[0] / f"{name}.crt").read_bytes())
+        assert parse_certificate(cert.public_bytes(Encoding.DER))["issuer_o"] == organization
 
 
 def test_lab_certificates_and_sha1(lab_material):

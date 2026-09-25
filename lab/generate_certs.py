@@ -36,11 +36,11 @@ def sign_legacy(cert: x509.Certificate, issuer_key) -> x509.Certificate:
 
 
 def make_certificate(name: str, days: int, issuer=None, ca=False, weak=False,
-                     san: str | None = None) -> tuple:
+                     san: str | None = None, organization: str = "Lab Services") -> tuple:
     """Create a key and a certificate with strict-compatible CA extensions."""
     key = rsa.generate_private_key(public_exponent=65537, key_size=1024 if weak else 2048)
     subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, name),
-                         x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Certificate Radar Lab")])
+                         x509.NameAttribute(NameOID.ORGANIZATION_NAME, organization)])
     issuer_cert, issuer_key = issuer if issuer else (None, key)
     now = datetime.now(timezone.utc)
     builder = (x509.CertificateBuilder().subject_name(subject)
@@ -78,16 +78,19 @@ def generate(output: Path = ROOT / "lab/certs", trust: Path = ROOT / "data/trust
     """Generate all fixtures and install only the laboratory root as trusted."""
     output.mkdir(parents=True, exist_ok=True)
     trust.mkdir(parents=True, exist_ok=True)
-    root = make_certificate("Lab Root CA", 3650, ca=True)
-    intermediate = make_certificate("Lab Intermediate CA", 1825, issuer=root, ca=True)
-    rogue = make_certificate("Rogue CA", 3650, ca=True)
+    root = make_certificate("Lab Root CA", 3650, ca=True, organization="Lab Corporate PKI")
+    intermediate = make_certificate("Lab Intermediate CA", 1825, issuer=root, ca=True,
+                                    organization="Lab Corporate PKI")
+    rogue = make_certificate("Rogue CA", 3650, ca=True, organization="Rogue Issuer Ltd")
     for name, pair in [("lab-root-ca", root), ("lab-intermediate-ca", intermediate), ("rogue-ca", rogue)]:
         write_pair(output, name, pair, [])
     (trust / "lab-root-ca.pem").write_bytes(root[0].public_bytes(PEM))
     for name, days in SERVICES.items():
         issuer = None if name == "selfsigned" else rogue if name == "untrusted" else intermediate
         san = "www.other.local" if name == "mismatch" else "*.lab.local" if name == "wildcard" else None
-        pair = make_certificate(f"{name}.lab.local", days, issuer, weak=name == "weak", san=san)
+        organization = "Self-Signed Test" if name == "selfsigned" else "Lab Services"
+        pair = make_certificate(f"{name}.lab.local", days, issuer, weak=name == "weak", san=san,
+                                organization=organization)
         chain = [] if name in {"selfsigned", "nochain"} else [issuer[0]]
         write_pair(output, name, pair, chain)
 
