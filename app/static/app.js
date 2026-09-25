@@ -12,7 +12,16 @@ window.Radar = (() => {
   }
   function message(text, error = false) {
     const box = document.querySelector("#message");
-    box.textContent = text; box.hidden = !text; box.classList.toggle("error", error);
+    box.replaceChildren();
+    box.hidden = !text;
+    box.classList.toggle("error", error);
+    if (text) {
+      const close = el("button", "×", "message-close");
+      close.type = "button";
+      close.setAttribute("aria-label", "Закрыть уведомление");
+      close.addEventListener("click", () => message(""));
+      box.append(el("span", text), close);
+    }
   }
   async function api(path, options = {}) {
     let response;
