@@ -1,18 +1,37 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Certificate Radar</title>
-  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/app.css">
-  <link rel="stylesheet" href="/static/forms.css">
-</head>
-<body>
-<header><a href="/" class="brand"><span class="brand-mark">◉</span> Certificate Radar</a><nav aria-label="Навигация">
-<a href="/">Dashboard</a><a href="/scan">Сканирование</a><a href="/settings">Настройки</a><a href="/audit">Журнал</a><a href="/report">Отчёт</a>
-</nav></header>
-<main><div id="message" class="notice" role="status" hidden></div>{% block content %}<h1>Certificate Radar</h1><p>Не настроено.</p>{% endblock %}</main>
-<footer>Certificate Radar · Мониторинг сертификатов · Только чтение</footer>
-<script src="/static/app.js" defer></script>
-{% block scripts %}{% endblock %}
-</body></html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Certificate Radar</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/app.css">
+    <link rel="stylesheet" href="/static/forms.css">
+  </head>
+  <body>
+    <header>
+      <a href="/" class="brand">
+        <span class="brand-mark">◉</span>
+        Certificate Radar
+      </a>
+      <nav aria-label="Навигация">
+        <a href="/">Dashboard</a>
+        <a href="/scan">Сканирование</a>
+        <a href="/settings">Настройки</a>
+        <a href="/audit">Журнал</a>
+        <a href="/report">Отчёт</a>
+      </nav>
+    </header>
+    <main>
+      <div id="message" class="notice" role="status" hidden></div>
+      {% block content %}
+        <h1>Certificate Radar</h1>
+        <p>Не настроено.</p>
+      {% endblock %}
+    </main>
+    <footer>Certificate Radar · Мониторинг сертификатов · Только чтение</footer>
+    <script src="/static/app.js" defer></script>
+    {% block scripts %}
+    {% endblock %}
+  </body>
+</html>
