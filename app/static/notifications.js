@@ -8,7 +8,7 @@
   R.api("/api/notifications").then(data=>{
     const button=document.querySelector("#send-now");
     if(button && Object.values(data.channels).some(channel=>channel.configured)) {button.disabled=false;button.textContent="Отправить уведомления";button.title="Отправить сводку повторно";}
-    if(data.failures.length) R.message("Последняя ошибка уведомлений: " + data.failures[0].details.error,true);
+    if(data.last_error) R.message("Последняя ошибка уведомлений: " + data.last_error,true);
     const container=document.querySelector("#channels");
     if(container) for(const [name,channel] of Object.entries(data.channels)) {
       const card=R.el("div",null,"panel"),title=R.el("h3",{telegram:"Telegram",email:"Email",teams:"Teams"}[name]);

@@ -16,10 +16,17 @@ router = APIRouter(prefix="/api/notifications")
 
 @router.get("")
 def status() -> dict:
-    """Return masked channel setup and recent delivery failures."""
+    """Return masked setup, failure history and the latest delivery error."""
     with SessionLocal() as session:
         failures = list(session.scalars(select(AuditLog).where(AuditLog.action == "notification_failed").order_by(AuditLog.id.desc()).limit(10)))
-    return {"channels": channel_status(), "failures": [model_dict(row) for row in failures]}
+        latest = session.scalar(
+            select(AuditLog)
+            .where(AuditLog.action.in_(["notification_sent", "notification_failed"]))
+            .order_by(AuditLog.id.desc()).limit(1)
+        )
+        last_error = latest.details.get("error") if latest and latest.action == "notification_failed" else None
+    return {"channels": channel_status(), "failures": [model_dict(row) for row in failures],
+            "last_error": last_error}
 
 
 @router.post("/send-now")

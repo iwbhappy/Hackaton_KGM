@@ -37,3 +37,20 @@ def test_unconfigured_channels_are_explicit(client):
     assert client.post("/api/notifications/test/telegram").status_code == 422
     assert client.post("/api/notifications/send-now").json()["configured"] is False
     assert client.get("/api/notifications").json()["channels"]["telegram"]["configured"] is False
+
+
+def test_latest_notification_error_clears_after_success(client, monkeypatch):
+    notifier = Mock()
+    monkeypatch.setattr("app.api.notifications.get_notifiers", lambda: {"telegram": notifier})
+    assert client.get("/api/notifications").json()["last_error"] is None
+    notifier.send.side_effect = RuntimeError("private delivery details")
+    failed = client.post("/api/notifications/test/telegram").json()
+    status = client.get("/api/notifications").json()
+    assert failed["status"] == "failed"
+    assert status["last_error"] == failed["error"]
+    assert len(status["failures"]) == 1
+    notifier.send.side_effect = None
+    assert client.post("/api/notifications/test/telegram").json()["status"] == "sent"
+    status = client.get("/api/notifications").json()
+    assert status["last_error"] is None
+    assert len(status["failures"]) == 1
