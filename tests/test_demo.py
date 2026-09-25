@@ -27,6 +27,7 @@ def test_complete_demo_from_clean_database(round_number, client, monkeypatch, la
     assert len(rows) == 15
     assert rows["vpn.lab.local"]["risk_score"] == 91
     assert rows["vpn.lab.local"]["days_left"] == 5
+    assert "CHAIN_UNTRUSTED" not in {i["code"] for i in rows["weak.lab.local"]["issues"]}
     for host, code in [("nochain", "CHAIN_UNTRUSTED"), ("mismatch", "HOSTNAME_MISMATCH"),
                        ("weak", "WEAK_KEY"), ("weak", "WEAK_SIGNATURE"), ("dead", "UNREACHABLE")]:
         assert code in {i["code"] for i in rows[host + ".lab.local"]["issues"]}

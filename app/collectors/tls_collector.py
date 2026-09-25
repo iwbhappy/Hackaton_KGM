@@ -68,28 +68,60 @@ class TLSCollector(BaseCollector):
         self.verify(target, observation)
         return observation
 
+    def verification_context(self, legacy: bool) -> ssl.SSLContext:
+        """Require a trusted chain, optionally allowing legacy TLS and cryptography."""
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_REQUIRED
+        for path in sorted(self.trust_dir.glob("*")):
+            if path.suffix.lower() in {".pem", ".crt", ".cer"}:
+                ctx.load_verify_locations(cafile=str(path))
+        if legacy:
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", DeprecationWarning)
+                    ctx.minimum_version = ssl.TLSVersion.TLSv1
+                ctx.set_ciphers("DEFAULT:@SECLEVEL=0")
+            except (ssl.SSLError, ValueError):
+                pass
+        return ctx
+
     def verify(self, target: Target, observation: RawObservation) -> None:
-        """Verify chain trust on the same IP, keeping hostname checking separate."""
-        try:
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            for path in sorted(self.trust_dir.glob("*")):
-                if path.suffix.lower() in {".pem", ".crt", ".cer"}:
-                    ctx.load_verify_locations(cafile=str(path))
-            with socket.create_connection((observation.resolved_ip, target.port), self.timeout) as raw:
-                with ctx.wrap_socket(raw, server_hostname=target.sni) as tls:
-                    if tls.getpeercert(binary_form=True) != observation.der:
-                        observation.chain_status = "error"
-                        observation.chain_message = "Сертификат изменился между двумя подключениями"
-                    else:
-                        observation.chain_status = "valid"
-                        observation.chain_message = "Цепочка доверена"
-        except ssl.SSLCertVerificationError as error:
-            observation.chain_status = CHAIN_CODES.get(error.verify_code, "error")
-            observation.chain_message = error.verify_message
-        except OSError as error:
-            observation.chain_status = "error"
-            observation.chain_message = "Проверка доверия не выполнена: " + network_error(error)
+        """Verify trust on the same IP, retrying only TLS/security-policy failures."""
+        original_rejection = None
+        for legacy in (False, True):
+            try:
+                ctx = self.verification_context(legacy)
+                with socket.create_connection((observation.resolved_ip, target.port), self.timeout) as raw:
+                    with ctx.wrap_socket(raw, server_hostname=target.sni) as tls:
+                        if tls.getpeercert(binary_form=True) != observation.der:
+                            observation.chain_status = "error"
+                            observation.chain_message = "Сертификат изменился между двумя подключениями"
+                        else:
+                            observation.chain_status = "valid"
+                            observation.chain_message = "Цепочка доверена"
+            except ssl.SSLCertVerificationError as error:
+                if not legacy and error.verify_code in {66, 67, 68}:
+                    original_rejection = error.verify_message
+                    continue
+                observation.chain_status = CHAIN_CODES.get(error.verify_code, "error")
+                observation.chain_message = error.verify_message
+            except ssl.SSLError as error:
+                if not legacy:
+                    continue
+                observation.chain_status = "error"
+                observation.chain_message = "Проверка доверия не выполнена: " + network_error(error)
+            except OSError as error:
+                observation.chain_status = "error"
+                observation.chain_message = "Проверка доверия не выполнена: " + network_error(error)
+            if legacy:
+                observation.chain_message += (
+                    "; проверено с пониженным уровнем безопасности OpenSSL "
+                    "(устаревший TLS или слабая криптография)"
+                )
+                if original_rejection:
+                    observation.chain_message += "; по умолчанию отклонено: " + original_rejection
+            break
 
 
 def result_attributes(observation: RawObservation, host: str) -> dict:
