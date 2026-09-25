@@ -15,7 +15,7 @@
     const attrs=[["Сервис / порт",`${ep.host}:${ep.port}`],["IP-адрес",latest.resolved_ip],["CN",latest.subject_cn],
       ["SAN DNS",latest.san_dns.join("\n")],["SAN IP",latest.san_ip.join("\n")],["Издатель CN",latest.issuer_cn],["Организация издателя",latest.issuer_o],
       ["Серийный номер",latest.serial],["Thumbprint SHA-1",latest.thumbprint_sha1],["Fingerprint SHA-256",latest.fingerprint_sha256],
-      ["Действует с (UTC)",latest.not_before],["Действует до (UTC)",latest.not_after],["Осталось дней",latest.days_left],["Версия TLS",latest.tls_version],
+      ["Действует с (UTC)",R.utc(latest.not_before)],["Действует до (UTC)",R.utc(latest.not_after)],["Осталось дней",latest.days_left],["Версия TLS",latest.tls_version],
       ["Ключ",[latest.key_type,latest.key_size].filter(Boolean).join(" ")],["Подпись",latest.signature_algorithm],
       ["Цепочка",R.chains[latest.chain_status]],["Проверка доверия / OpenSSL",latest.chain_message],
       ["Проверка имени",{match:"Совпадает",mismatch:"Не совпадает",not_checked:"Не проверено"}[latest.hostname_match]],["Ошибка подключения",latest.error]];

@@ -28,6 +28,12 @@ window.Radar = (() => {
   const json = data => ({method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
   const date = value => value ? new Date(value).toLocaleDateString("ru-RU", {timeZone:"UTC"}) : "—";
   const datetime = value => value ? new Date(value).toLocaleString("ru-RU") : "—";
+  function utc(value) {
+    if (!value) return "—";
+    const parsed = new Date(value);
+    const pad = number => String(number).padStart(2, "0");
+    return `${date(value)} ${pad(parsed.getUTCHours())}:${pad(parsed.getUTCMinutes())} UTC`;
+  }
   const status = value => el("span",labels[value] || value,"badge status-" + value);
   const risk = row => el("span",row.risk_score === null ? "—" : `${row.risk_score} / ${row.risk_level}`,"badge risk-" + (row.risk_level || "none"));
   const issuer = row => row.issuer_o || row.issuer_cn || "—";
@@ -41,5 +47,5 @@ window.Radar = (() => {
   document.querySelectorAll("nav a").forEach(link => {
     if (link.getAttribute("href") === location.pathname) link.setAttribute("aria-current", "page");
   });
-  return {labels,colors,criticalities,chains,el,message,api,json,date,datetime,status,risk,issuer,action};
+  return {labels,colors,criticalities,chains,el,message,api,json,date,datetime,utc,status,risk,issuer,action};
 })();
